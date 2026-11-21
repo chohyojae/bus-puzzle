@@ -1,6 +1,6 @@
 # Bus Puzzle
 
-[브라우저에서 바로 플레이하기](https://chohyojae.github.io/bus-puzzle-play/)
+[브라우저에서 바로 플레이하기](https://chohyojae.github.io/bus-puzzle/)
 
 주차된 버스를 어떤 순서로 승강장에 보낼지 고르는 브라우저 퍼즐입니다. 버스는 같은 색 승객으로 정원을 채워야 떠납니다. 승강장은 일곱 자리뿐이라, 48인승 버스에 32명만 타면 나머지 16명이 올 때까지 한 자리를 계속 차지합니다.
 

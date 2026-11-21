@@ -1,0 +1,576 @@
+.depot-app {
+  --ink: #1e4448;
+  --cream: #fff0c9;
+  --teal: #176269;
+  --frame-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: 100dvh;
+  width: 100%;
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  overflow: clip;
+  background: #96cbbb;
+  color: var(--ink);
+  font-family:
+    ui-rounded, "Arial Rounded MT Bold", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Malgun Gothic", sans-serif;
+  isolation: isolate;
+}
+.depot-app::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: url("./art/harbor.webp") center / cover;
+  z-index: -1;
+}
+.depot-stage {
+  position: relative;
+  width: min(100%, calc(var(--frame-height) * 400 / 760));
+  aspect-ratio: 400 / 760;
+  container-type: inline-size;
+  border-radius: 17px;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    0 2px 0 2px #fff1cdb5,
+    0 8px 28px #244e4b52;
+  background: #a5d8ca;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.depot-board {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  touch-action: manipulation;
+}
+.depot-hud,
+.depot-controls {
+  position: absolute;
+  left: 3.3%;
+  right: 3.3%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+.depot-hud {
+  top: 0.2%;
+}
+.depot-controls {
+  bottom: 1.25%;
+  left: 5%;
+  right: 5%;
+}
+.depot-hud button,
+.depot-controls button {
+  pointer-events: auto;
+}
+.depot-app button {
+  font-weight: 750;
+}
+.depot-pill,
+.depot-pause,
+.depot-controls button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2cqw;
+  min-height: 8.8cqw;
+  border-radius: 999px;
+  font-size: 4cqw;
+  line-height: 1;
+  border: 1px solid #aa966c;
+  box-shadow:
+    inset 0 1.8px 0 #fff8d9,
+    inset 0 -2px 0 #dfc899,
+    0 2px 1px #5c6c57aa,
+    0 3px 6px #294b4a33;
+  color: var(--ink);
+  background: linear-gradient(#fff6da, #ffedc4);
+}
+.depot-hud .depot-pill,
+.depot-hud .depot-pause {
+  min-height: 8cqw;
+}
+.depot-hud button::after {
+  content: "";
+  position: absolute;
+  inset: -4px -1px;
+}
+.depot-level {
+  position: relative;
+}
+.depot-level {
+  padding: 0 3.8cqw;
+  font-weight: 900 !important;
+  font-size: 4.7cqw;
+}
+.depot-count {
+  padding: 0 3cqw;
+  gap: 1cqw;
+  font-size: 3.2cqw;
+  white-space: nowrap;
+  font-weight: 800;
+}
+.depot-count svg {
+  width: 4cqw;
+  height: 4cqw;
+}
+.depot-count b {
+  font-size: 4.7cqw;
+  font-variant-numeric: tabular-nums;
+}
+.depot-pause {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9cqw;
+  border-radius: 3.7cqw;
+}
+.depot-pause svg {
+  stroke-width: 4.2;
+  width: 4cqw;
+  height: 4cqw;
+}
+.depot-app .ocean,
+.depot-pause {
+  background: linear-gradient(#2d8585, #155761);
+  border: 1px solid #234e53;
+  color: #fff4d6;
+  box-shadow:
+    inset 0 2px 0 #65a4a0,
+    inset 0 -2px 0 #144952,
+    0 2px 0 #3858519c,
+    0 3px 7px #27493836;
+}
+.depot-controls .depot-action {
+  min-width: 35%;
+  min-height: 10cqw;
+  gap: 1.8cqw;
+  padding: 0 3cqw;
+  font-size: 4.2cqw;
+  font-weight: 850;
+  letter-spacing: -0.04em;
+}
+.depot-controls .depot-action svg {
+  width: 4.6cqw;
+  height: 4.6cqw;
+  stroke-width: 3;
+}
+.depot-controls .depot-hint {
+  width: 9.5cqw;
+  height: 9.5cqw;
+  min-height: 0;
+}
+.depot-hint svg {
+  width: 5.2cqw;
+  height: 5.2cqw;
+}
+.depot-controls button:disabled {
+  opacity: 1;
+  color: #748173;
+  background: #e4dfc7;
+  box-shadow:
+    inset 0 1.5px 0 #fff4d5,
+    inset 0 -2px 0 #c2c3a5,
+    0 2px 3px #2b514f59;
+}
+.depot-app button:focus-visible {
+  outline: 3px solid #e2a337;
+  outline-offset: 2px;
+}
+.depot-stage button:active:enabled {
+  filter: brightness(0.92);
+}
+.depot-vehicle.parked {
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.vehicle-ring {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 2.8;
+  pointer-events: none;
+}
+.depot-vehicle.suggested .vehicle-ring {
+  stroke: #fff7a9;
+  filter: drop-shadow(0 0 2.5px #a37927);
+}
+.depot-vehicle.rejected .vehicle-ring {
+  stroke: #ed7850;
+}
+.depot-vehicle:focus {
+  outline: none;
+}
+.depot-vehicle:focus-visible .vehicle-ring {
+  stroke: #fff9bd;
+  stroke-dasharray: 4 2;
+}
+@media (hover: hover) {
+  .depot-vehicle.parked:hover .vehicle-ring {
+    stroke: #fff6d9b3;
+  }
+}
+.depot-bus-mark,
+.depot-passenger-mark {
+  text-anchor: middle;
+  fill: white;
+  stroke: #293e4d;
+  stroke-opacity: 0.65;
+  paint-order: stroke fill;
+  stroke-width: 0.65px;
+  font-size: 7px;
+  font-family: system-ui, sans-serif;
+  font-weight: 800;
+  pointer-events: none;
+}
+.depot-roof-seats,
+.depot-blind-mark {
+  fill: white;
+  font-family: system-ui, sans-serif;
+  font-size: 8.2px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+.depot-blind-mark {
+  stroke: #202d40;
+  stroke-width: 1.5px;
+  paint-order: stroke fill;
+  font-size: 9px;
+}
+.depot-bus-mark.blind {
+  font-size: 11px;
+}
+.depot-passenger-mark {
+  font-size: 4.3px;
+  stroke-width: 0.35px;
+}
+.depot-load rect {
+  fill: #214951;
+  stroke: #fff1ca;
+  stroke-width: 0.75px;
+}
+.depot-load text {
+  fill: #fff5cf;
+  font:
+    800 9px system-ui,
+    sans-serif;
+}
+.depot-cue {
+  position: absolute;
+  left: 3%;
+  right: 3%;
+  top: 42%;
+  display: grid;
+  justify-content: center;
+  pointer-events: none;
+}
+.depot-cue span {
+  padding: 1.8cqw 3.2cqw;
+  font-size: 3.1cqw;
+  text-align: center;
+  color: #fff6db;
+  font-weight: 750;
+  line-height: 1.45;
+  letter-spacing: -0.035em;
+  background: #1b5156f5;
+  border: 1px solid #b2d0b4;
+  border-radius: 30px;
+  box-shadow: 0 2px 6px #153a3b54;
+}
+.depot-app .modal {
+  color: var(--ink);
+  background: #fff3d5;
+  border: 2px solid #bba77e;
+  border-radius: 23px;
+  padding: 25px 23px;
+  width: min(340px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  box-shadow:
+    inset 0 3px 0 #fff9e8,
+    0 5px 0 #6b7965,
+    0 17px 60px #0a39395e;
+}
+.depot-app .modal::backdrop {
+  background: #123e4187;
+  backdrop-filter: blur(2px);
+}
+.depot-app .modal h2 {
+  color: #194f54;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 850;
+}
+.depot-app .modal p {
+  color: #52675e;
+  margin: 10px 0 0;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+.depot-menu {
+  display: grid;
+  gap: 8px;
+  margin-top: 19px;
+}
+.depot-menu button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 43px;
+  padding: 8px 14px;
+  color: #274e46;
+  background: #fbebc7;
+  border: 1px solid #c8b797;
+  border-radius: 13px;
+  box-shadow:
+    inset 0 1px 0 #ffffeb,
+    0 2px 0 #c0b597;
+}
+.depot-menu button.ocean {
+  color: #fff2cf;
+  background: linear-gradient(#368888, #1b636b);
+}
+.depot-menu button strong {
+  margin-right: auto;
+}
+.depot-menu button span {
+  flex: 1;
+}
+.depot-guide {
+  display: grid;
+  gap: 12px;
+  text-align: start;
+  padding-inline-start: 21px;
+  line-height: 1.65;
+  font-size: 14px;
+  word-break: keep-all;
+}
+.depot-guide li::marker {
+  color: #37897c;
+  font-weight: 800;
+}
+.depot-warning {
+  position: fixed;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffe2ac;
+  border-radius: 12px;
+  padding: 8px 12px;
+  text-align: center;
+  z-index: 4;
+  width: max-content;
+  max-width: 96vw;
+  font-size: 13px;
+}
+.depot-warning button {
+  background: transparent;
+  text-decoration: underline;
+}
+.depot-settings {
+  position: fixed;
+  inset: 0;
+  z-index: 3;
+  overflow: auto;
+  background: linear-gradient(135deg, #1d414a, #18353f);
+  color: #fff8df;
+  padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
+}
+.depot-settings > main {
+  margin: 0 auto;
+  max-width: 800px;
+}
+.depot-loading {
+  font-weight: 800;
+}
+@media (max-aspect-ratio: 3 / 5) {
+  .depot-stage {
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+@media (max-height: 500px) and (min-aspect-ratio: 1) {
+  .depot-app {
+    --frame-height: 610px;
+  }
+}
+@media (forced-colors: active) {
+  .depot-vehicle:focus-visible .vehicle-ring {
+    stroke: Highlight;
+  }
+}
+.depot-vignette {
+  width: 106px;
+  height: 62px;
+  display: block;
+  margin: 12px auto 0;
+  object-fit: contain;
+}
+.depot-walk-marks {
+  animation: depot-walk-marks 1.2s ease-in-out infinite;
+  opacity: 0.7;
+}
+@keyframes depot-walk-marks {
+  0%,
+  100% {
+    opacity: 0.42;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+.reduce-motion .depot-walk-marks {
+  animation: none;
+}
+.depot-compact {
+  --ink: #243653;
+  background: #aab8cc;
+}
+.depot-compact::before {
+  background: radial-gradient(ellipse at 50% 26%, #e1e8ee, #bac7d7 62%, #91a4bc);
+}
+.depot-compact .depot-stage {
+  box-shadow:
+    0 0 0 1px #9aaac1,
+    0 12px 48px #3a507d4a;
+  background: #c8d3e2;
+}
+.depot-compact .depot-hud {
+  left: 24%;
+  right: 24%;
+  top: 2.4%;
+  flex-direction: column;
+  gap: 0.85cqw;
+}
+.depot-compact .depot-level {
+  min-height: 0;
+  padding: 1.6cqw 3cqw;
+  border: 0;
+  border-radius: 10px;
+  box-shadow: none;
+  color: white;
+  background: none;
+  font-size: 8.7cqw;
+  letter-spacing: -0.055em;
+  font-weight: 950 !important;
+  -webkit-text-stroke: 1.4px #26324a;
+  paint-order: stroke fill;
+  text-shadow: 0 0.7cqw #354159;
+}
+.depot-compact .depot-count {
+  min-height: 6.5cqw;
+  padding: 0 2.9cqw;
+  border: 1px solid #afbdca;
+  background: #edf3f8e6;
+  box-shadow: 0 1px 2px #475d792b;
+  font-size: 2.9cqw;
+  color: #32465d;
+}
+.depot-compact .depot-count b {
+  font-size: 3.75cqw;
+}
+.depot-queue-details {
+  display: grid;
+  justify-items: center;
+  gap: 0.55cqw;
+  line-height: 1.18;
+}
+.depot-queue-source:empty {
+  display: none;
+}
+.depot-queue-source span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45cqw;
+  color: #284866;
+  font-size: 2.95cqw;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.depot-queue-source svg {
+  width: 2.8cqw;
+  height: 2.8cqw;
+  stroke-width: 3;
+}
+.depot-queue-source [data-side="right"] {
+  flex-direction: row-reverse;
+}
+.depot-queue-source [data-side="right"] svg {
+  transform: scaleX(-1);
+}
+.depot-queue-count {
+  color: #3c4e65;
+  font-size: 3cqw;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.depot-compact .depot-pause {
+  left: auto;
+  right: -1.4cqw;
+  top: 2.1cqw;
+  transform: none;
+  width: 8cqw;
+  min-height: 8cqw;
+  border-radius: 50%;
+  border: 1px solid #486581;
+  color: white;
+  background: linear-gradient(#67a7e0, #3277b7 58%, #26588b);
+  box-shadow:
+    inset 0 1.5px #b2dcf7,
+    0 2px #46617b,
+    0 3px 5px #354b6438;
+}
+.depot-compact .depot-controls .depot-action,
+.depot-compact .depot-controls .depot-hint {
+  border: 1px solid #8598af;
+  color: #2e4865;
+  background: linear-gradient(#f8fbff, #d9e4ef);
+  box-shadow:
+    inset 0 1.5px white,
+    inset 0 -1.5px #b5c5d6,
+    0 2px #7f93aa;
+}
+.depot-compact .depot-controls button:disabled {
+  color: #75859a;
+  background: #d2dbe5;
+  box-shadow:
+    inset 0 1px #edf2f8,
+    0 2px #9aa9ba;
+}
+.depot-compact .depot-controls .ocean {
+  color: white;
+  background: linear-gradient(#508fc7, #326b9b);
+  box-shadow:
+    inset 0 1.5px #90bade,
+    0 2px #405f80;
+}
+.depot-compact .depot-cue {
+  top: 46.5%;
+}
+.depot-compact .depot-cue span {
+  background: #263955f0;
+  color: white;
+  border-color: #90a4bf;
+}
+.depot-compact .depot-load rect {
+  stroke: #fff;
+  stroke-width: 1px;
+}
+.depot-compact .depot-vehicle > [data-bus-art] {
+  filter: drop-shadow(0 1.25px 0.8px #26334e6b);
+}
+.depot-compact .depot-load .compact-load-label {
+  font-size: 9.3px;
+  fill: white;
+  stroke: #22334a;
+  stroke-width: 1.6px;
+  paint-order: stroke fill;
+}

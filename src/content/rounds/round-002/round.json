@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "id": "round-002",
+  "revision": 1,
+  "title": "길을 열어주세요",
+  "description": "앞을 막은 버스부터 보내고, 플랫폼 자리를 활용해 보세요.",
+  "difficulty": "easy",
+  "order": 20,
+  "unlockAfter": ["round-001"],
+  "platformSlotCount": 2,
+  "grid": {
+    "rows": 4,
+    "cols": 4
+  },
+  "passengers": [
+    "red",
+    "red",
+    "blue",
+    "blue",
+    "green",
+    "green",
+    "yellow",
+    "yellow",
+    "red",
+    "red",
+    "blue",
+    "blue"
+  ],
+  "vehicles": [
+    {
+      "id": "red-1",
+      "color": "red",
+      "row": 1,
+      "col": 0,
+      "direction": "right",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "blue-1",
+      "color": "blue",
+      "row": 1,
+      "col": 3,
+      "direction": "up",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "yellow-1",
+      "color": "yellow",
+      "row": 3,
+      "col": 1,
+      "direction": "up",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "green-1",
+      "color": "green",
+      "row": 0,
+      "col": 1,
+      "direction": "right",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "red-2",
+      "color": "red",
+      "row": 2,
+      "col": 2,
+      "direction": "down",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "blue-2",
+      "color": "blue",
+      "row": 3,
+      "col": 3,
+      "direction": "right",
+      "length": 1,
+      "capacity": 2
+    }
+  ],
+  "assets": {
+    "decoration": "./assets/decoration.svg"
+  },
+  "mechanics": []
+}

@@ -1,0 +1,43 @@
+{
+  "name": "bus-puzzle",
+  "private": true,
+  "version": "1.0.0",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "packageManager": "bun@1.4.5",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "validate:rounds": "bun scripts/validate-rounds.ts",
+    "generate:round": "bun scripts/generate-round.ts",
+    "solve:round": "bun scripts/solve-round.ts",
+    "measure:content": "bun scripts/measure-content.ts",
+    "check": "tsc --noEmit && biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "build": "bun run validate:rounds && bun run check && vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@bokuweb/zstd-wasm": "0.0.27",
+    "idb": "^8.0.4",
+    "pixi.js": "8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.6.8",
+    "@playwright/test": "^1.65.1",
+    "@types/bun": "^1.4.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.3.0",
+    "fake-indexeddb": "^6.2.8",
+    "sharp": "^0.35.5",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vite-plugin-pwa": "^2.0.0",
+    "vitest": "^5.1.1"
+  }
+}

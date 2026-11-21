@@ -1,0 +1,16 @@
+{
+  "seed": 24019,
+  "generatorVersion": 1,
+  "difficulty": "medium",
+  "witness": ["bus-09", "bus-08", "bus-07", "bus-06", "bus-05", "bus-04", "bus-03", "bus-02", "bus-01"],
+  "status": "solved",
+  "solution": ["bus-01", "bus-02", "bus-04", "bus-09", "bus-06", "bus-08", "bus-03", "bus-07", "bus-05"],
+  "exploredStates": 10,
+  "metrics": {
+    "trapRatio": 0.1935483870967742,
+    "inconclusiveBranches": 0,
+    "choiceStates": 7,
+    "platformPressure": 5,
+    "randomWinRate": 0.3
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "id": "round-001",
+  "revision": 1,
+  "title": "첫 출발",
+  "description": "화살표 방향으로 출발! 같은 색 승객을 태워보세요.",
+  "difficulty": "easy",
+  "order": 10,
+  "unlockAfter": [],
+  "platformSlotCount": 2,
+  "grid": {
+    "rows": 3,
+    "cols": 4
+  },
+  "passengers": ["red", "red", "blue", "blue", "green", "green", "yellow", "yellow"],
+  "vehicles": [
+    {
+      "id": "red-1",
+      "color": "red",
+      "row": 0,
+      "col": 0,
+      "direction": "up",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "blue-1",
+      "color": "blue",
+      "row": 0,
+      "col": 2,
+      "direction": "up",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "yellow-1",
+      "color": "yellow",
+      "row": 2,
+      "col": 1,
+      "direction": "down",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "green-1",
+      "color": "green",
+      "row": 2,
+      "col": 3,
+      "direction": "down",
+      "length": 1,
+      "capacity": 2
+    }
+  ],
+  "assets": {
+    "decoration": "./assets/decoration.svg"
+  },
+  "mechanics": []
+}

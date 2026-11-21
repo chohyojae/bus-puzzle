@@ -1,0 +1,126 @@
+{
+  "schemaVersion": 1,
+  "id": "round-003",
+  "revision": 1,
+  "title": "조금 더 신중하게",
+  "description": "승객 순서를 먼저 살펴보세요. 빈자리 하나가 중요해요.",
+  "difficulty": "medium",
+  "order": 30,
+  "unlockAfter": ["round-002"],
+  "platformSlotCount": 3,
+  "grid": {
+    "rows": 5,
+    "cols": 5
+  },
+  "passengers": [
+    "green",
+    "green",
+    "green",
+    "green",
+    "green",
+    "red",
+    "red",
+    "red",
+    "blue",
+    "blue",
+    "blue",
+    "blue",
+    "blue",
+    "yellow",
+    "yellow",
+    "yellow",
+    "green",
+    "green",
+    "red",
+    "red",
+    "yellow",
+    "yellow"
+  ],
+  "vehicles": [
+    {
+      "id": "bus-01",
+      "color": "green",
+      "row": 1,
+      "col": 1,
+      "direction": "up",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "bus-02",
+      "color": "yellow",
+      "row": 0,
+      "col": 4,
+      "direction": "right",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "bus-03",
+      "color": "blue",
+      "row": 4,
+      "col": 0,
+      "direction": "right",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "bus-04",
+      "color": "blue",
+      "row": 1,
+      "col": 0,
+      "direction": "up",
+      "length": 1,
+      "capacity": 3
+    },
+    {
+      "id": "bus-05",
+      "color": "yellow",
+      "row": 3,
+      "col": 3,
+      "direction": "up",
+      "length": 1,
+      "capacity": 3
+    },
+    {
+      "id": "bus-06",
+      "color": "red",
+      "row": 2,
+      "col": 3,
+      "direction": "left",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "bus-07",
+      "color": "green",
+      "row": 0,
+      "col": 3,
+      "direction": "left",
+      "length": 1,
+      "capacity": 2
+    },
+    {
+      "id": "bus-08",
+      "color": "red",
+      "row": 4,
+      "col": 1,
+      "direction": "down",
+      "length": 1,
+      "capacity": 3
+    },
+    {
+      "id": "bus-09",
+      "color": "green",
+      "row": 1,
+      "col": 2,
+      "direction": "right",
+      "length": 1,
+      "capacity": 3
+    }
+  ],
+  "assets": {
+    "decoration": "./assets/decoration.svg"
+  },
+  "mechanics": []
+}

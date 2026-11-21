@@ -125,6 +125,17 @@ test('subpath assets, service worker precache and offline reload support all scr
   await page.getByRole('dialog').getByRole('button', { name: '라운드 목록으로' }).click();
   await page.getByRole('button', { name: '설정 열기' }).click();
   await expect(page.getByRole('heading', { name: '설정', exact: true })).toBeVisible();
+  for (const [name, marker] of [
+    ['AGPL-3.0-only', 'GNU AFFERO GENERAL PUBLIC LICENSE'],
+    ['라이브러리 라이선스', 'Bus Puzzle — Third-party notices'],
+    ['압축 모듈 라이선스', 'Third-party notices for the Zstandard backup codec'],
+  ]) {
+    const text = await page.getByRole('link', { name, exact: true }).evaluate(async (link) => {
+      const response = await fetch((link as HTMLAnchorElement).href);
+      return response.text();
+    });
+    expect(text).toContain(marker);
+  }
   await page.reload();
   await page.getByRole('button', { name: '시작하기', exact: true }).click();
   await expect(page.getByText('클리어', { exact: true })).toBeVisible();

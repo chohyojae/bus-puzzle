@@ -24,6 +24,8 @@ jobs:
       - run: bun run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          VITE_SOURCE_REPOSITORY: ${{ github.repository }}
+          VITE_SOURCE_REVISION: ${{ github.sha }}
       - run: bunx playwright install --with-deps chromium
       - run: bun run test:e2e --project=chromium --project=mobile-chromium
         env:

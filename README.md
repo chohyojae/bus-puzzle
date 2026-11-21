@@ -42,7 +42,7 @@ bun run dev
 
 ## 라이선스
 
-© 2026 chohyojae. 이 프로젝트에서 직접 작성한 게임 코드, 테스트와 빌드 스크립트에는 **GNU Affero General Public License 버전 3만** 적용됩니다(`AGPL-3.0-only`). [라이선스 전문](LICENSE.txt)
+© 2026 chohyojae. 이 프로젝트에서 직접 작성한 게임 코드, 테스트와 빌드 스크립트에는 **GNU Affero General Public License 버전 3만** 적용됩니다(`AGPL-3.0-only`). 배포된 게임의 **설정 → 앱 정보 → 게임 소스 코드**에서 해당 빌드의 소스를 확인할 수 있습니다. [라이선스 전문](LICENSE.txt)
 
 외부 라이브러리와 WebAssembly 압축 모듈은 각 저작권자의 라이선스를 따릅니다. 게임 이미지·아이콘·문서는 위 코드 라이선스의 적용 범위에서 제외합니다. [라이브러리 고지](public/third-party-notices.txt) · [압축 모듈 고지](public/third-party-notices-wasm.txt)
 

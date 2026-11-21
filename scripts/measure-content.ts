@@ -11,7 +11,7 @@ const measurements = [];
 for (const count of [3, 30, 100]) {
   const directory = await mkdtemp(join(tmpdir(), 'bus-puzzle-content-'));
   try {
-    for (const path of ['src', 'public', 'package.json', 'index.html', 'vite.config.ts'])
+    for (const path of ['src', 'public', 'LICENSE.txt', 'package.json', 'index.html', 'vite.config.ts'])
       await cp(resolve(path), join(directory, path), { recursive: true });
     await symlink(resolve('node_modules'), join(directory, 'node_modules'));
     const rounds = [...original];

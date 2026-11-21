@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react';
 import { useId, useState } from 'react';
+import gameLicenseUrl from '../../../LICENSE.txt?url';
 import { rounds } from '../../content/rounds/catalog';
 import { stops } from '../../game/depot/stages';
 import {
@@ -13,6 +14,10 @@ import { createEmptySave, getResumeProblem, type SaveData, type Settings } from 
 import type { SaveController } from '../../storage/use-save';
 import { Icon } from '../icons';
 import { Modal } from '../Modal';
+
+const sourceRepository = import.meta.env.VITE_SOURCE_REPOSITORY || 'chohyojae/bus-puzzle';
+const sourceRevision = import.meta.env.VITE_SOURCE_REVISION || 'main';
+const sourceUrl = `https://github.com/${sourceRepository}/tree/${sourceRevision}`;
 
 function SettingToggle({
   title,
@@ -251,6 +256,30 @@ export function SettingsScreen({
         </div>
         <p>기록은 이 브라우저에 저장됩니다. 브라우저 데이터를 삭제하면 기록도 함께 삭제됩니다.</p>
         <p>오프라인 준비가 끝나면 인터넷 연결 없이 플레이할 수 있습니다.</p>
+        <p>게임 코드는 보증 없이 제공되며, 아래 라이선스에 따라 수정·재배포할 수 있습니다.</p>
+        <p>
+          © 2026 chohyojae ·{' '}
+          <a href={gameLicenseUrl} target="_blank" rel="noreferrer">
+            AGPL-3.0-only
+          </a>
+          {' · '}
+          <a href={sourceUrl} target="_blank" rel="noreferrer">
+            게임 소스 코드
+          </a>
+        </p>
+        <p>
+          <a href={`${import.meta.env.BASE_URL}third-party-notices.txt`} target="_blank" rel="noreferrer">
+            라이브러리 라이선스
+          </a>
+          {' · '}
+          <a
+            href={`${import.meta.env.BASE_URL}third-party-notices-wasm.txt`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            압축 모듈 라이선스
+          </a>
+        </p>
         <small>Bus Puzzle v1.0.0</small>
       </section>
       {incoming && preview && (

@@ -7,23 +7,46 @@ const bus = (page: Page, id: number) => page.locator(`[data-vehicle-id="bus-${id
 const tapBus = (page: Page, id: number) => bus(page, id).locator('.vehicle-hit').click();
 const button = (page: Page, name: string) => page.getByRole('button', { name, exact: true });
 
-async function controlGameClock(page: Page) {
-  const now = await page.evaluate(() => Date.now());
-  await page.clock.pauseAt(new Date(now + 100));
+async function openWithPausedClock(page: Page) {
+  // Freeze time before the first navigation so dispatch and reload cannot race an animation frame.
+  await page.clock.install({ time: new Date('2026-01-01T00:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-01-01T00:01:00Z'));
+  await page.goto('./');
+  await waitForGame(page);
 }
 
-async function advanceUntil(page: Page, reached: () => Promise<boolean>, maxFrames = 120) {
-  for (let frame = 0; frame < maxFrames; frame++) {
-    if (await reached()) return;
-    await page.clock.runFor(16);
+async function advanceGame(page: Page, durationMs: number) {
+  // The game caps delayed render frames at 200 ms and integrates each physics step in between.
+  for (let elapsed = 0; elapsed < durationMs; elapsed += 160) {
+    await page.clock.fastForward(Math.min(160, durationMs - elapsed));
   }
-  throw new Error(`The expected animation state was not reached within ${maxFrames} frames.`);
+}
+
+async function advanceUntil(page: Page, reached: () => Promise<boolean>, withinMs = 2_000, stepMs = 80) {
+  if (await reached()) return;
+  for (let elapsed = 0; elapsed < withinMs; elapsed += stepMs) {
+    await page.clock.fastForward(Math.min(stepMs, withinMs - elapsed));
+    if (await reached()) return;
+  }
+  throw new Error(`The expected animation state was not reached within ${withinMs} ms of game time.`);
+}
+
+async function waitForGame(page: Page) {
+  // React can schedule its initial lazy-screen reveal after navigation.
+  await expect
+    .poll(
+      async () => {
+        await page.clock.fastForward(160);
+        return page.getByTestId('passenger-count').isVisible();
+      },
+      { timeout: 10_000, intervals: [25, 50, 100] },
+    )
+    .toBe(true);
 }
 
 async function restoreThirdStop(page: Page) {
   const save = createEmptySave();
   save.depotRun = { version: 1, stageId: 'depot-sunset', layout: 'compact', elapsed: 0, moves: [] };
-  await page.goto('./');
   await button(page, '일시정지').click();
   await button(page, '설정').click();
   await page.getByLabel('저장 데이터 가져오기', { exact: true }).setInputFiles({
@@ -89,17 +112,21 @@ test('the depot opens directly, the belt moves, and a blocked bus stays in its p
 test('a tapped bus drives, its progress survives immediate reload, and restart resets the yard', async ({
   page,
 }) => {
-  await page.goto('./');
+  test.setTimeout(60_000);
+  await openWithPausedClock(page);
   const remaining = page.getByTestId('passenger-count');
   await expect(remaining).toBeVisible();
   const initialCount = (await remaining.textContent()) ?? '';
   await tapBus(page, 1);
   await expect(bus(page, 1)).toHaveAttribute('data-phase', 'driving');
   await page.reload();
+  await waitForGame(page);
   await expect(bus(page, 1)).toHaveAttribute('data-phase', /driving|boarding|leaving/);
-  await expect(remaining).not.toHaveText(initialCount, { timeout: 16_000 });
+  await advanceUntil(page, async () => (await remaining.textContent()) !== initialCount, 16_000);
+  await expect(remaining).not.toHaveText(initialCount);
   await tapBus(page, 3);
-  await expect(bus(page, 1)).toHaveCount(0, { timeout: 16_000 });
+  await advanceUntil(page, async () => (await bus(page, 1).count()) === 0, 16_000);
+  await expect(bus(page, 1)).toHaveCount(0);
   await button(page, '다시 시작').click();
   await page.getByRole('dialog').getByRole('button', { name: '처음부터 시작' }).click();
   await expect(remaining).toHaveText(initialCount);
@@ -110,11 +137,9 @@ test('a diagonally parked bus leaves along its roof arrow', async ({ page }) => 
   const level = createDepot();
   const diagonal = level.buses.find((b) => b.angle % 90 !== 0 && getBlockers(level, b.id).length === 0);
   if (!diagonal) throw new Error('처음 출차할 수 있는 대각선 차량이 없습니다.');
-  await page.clock.install();
-  await page.goto('./');
+  await openWithPausedClock(page);
   const vehicle = page.locator(`[data-vehicle-id="${diagonal.id}"]`);
   await expect(vehicle).toHaveAttribute('data-phase', 'parked');
-  await controlGameClock(page);
   const renderPose = () =>
     vehicle.evaluate((element) => {
       const car = (element as SVGGraphicsElement).getCTM();
@@ -128,10 +153,16 @@ test('a diagonally parked bus leaves along its roof arrow', async ({ page }) => 
   expect(start.dx).toBeCloseTo(Math.sin(radians), 4);
   expect(start.dy).toBeCloseTo(-Math.cos(radians), 4);
   await vehicle.locator('.vehicle-hit').click();
-  await advanceUntil(page, async () => {
-    const pose = await renderPose();
-    return Math.hypot(pose.x - start.x, pose.y - start.y) > 1;
-  });
+  // Only the first straight segment follows the roof arrow. Sample one display frame at a time.
+  await advanceUntil(
+    page,
+    async () => {
+      const pose = await renderPose();
+      return Math.hypot(pose.x - start.x, pose.y - start.y) > 1;
+    },
+    160,
+    16,
+  );
   await expect(vehicle).toHaveAttribute('data-phase', 'driving');
   const moved = await renderPose();
   const dx = moved.x - start.x;
@@ -140,8 +171,8 @@ test('a diagonally parked bus leaves along its roof arrow', async ({ page }) => 
 });
 
 test('a seat opening admits the left rider while the right queue stays in place', async ({ page }) => {
-  await page.clock.install();
-  await page.goto('./');
+  test.setTimeout(60_000);
+  await openWithPausedClock(page);
   const waiting = page.getByLabel('승객 대기 통로');
   await expect(waiting).toBeVisible();
   const leads: number[] = [];
@@ -154,7 +185,6 @@ test('a seat opening admits the left rider while the right queue stays in place'
       ),
     );
   }
-  await controlGameClock(page);
   await button(page, '일시정지').click();
   const [leftId, rightId] = leads;
   const first = waiting.locator(`[data-queue-passenger-id="${leftId}"]`);
@@ -170,7 +200,7 @@ test('a seat opening admits the left rider while the right queue stays in place'
   expect(onLoop / initial).toBeLessThanOrEqual(0.25);
   expect(waitingSize).toBeGreaterThan(onLoop);
   for (const id of leads) await expect(page.locator(`[data-passenger-id="${id}"]`)).toHaveCount(0);
-  await page.clock.runFor(800);
+  await page.clock.fastForward(800);
   await expect(first).toHaveAttribute('transform', pose ?? '');
   await button(page, '계속하기').click();
   await tapBus(page, 1);
@@ -180,10 +210,10 @@ test('a seat opening admits the left rider while the right queue stays in place'
   const seats = Number((await occupancy.textContent())?.split('/')[1]);
   expect(seats).toBeGreaterThan(0);
   const admitted = page.locator(`[data-passenger-id="${leftId}"]`);
-  await advanceUntil(page, async () => (await admitted.count()) === 1, 600);
+  await advanceUntil(page, async () => (await admitted.count()) === 1, 9_600);
   await expect(first).toHaveCount(0);
   await expect(admitted).toBeVisible();
-  await page.clock.runFor(18_000);
+  await advanceGame(page, 18_000);
   await expect(right).toHaveAttribute('transform', rightPose ?? '');
   await expect(page.locator(`[data-passenger-id="${rightId}"]`)).toHaveCount(0);
   await expect(bus(page, 1)).toHaveAttribute('data-phase', 'boarding');
@@ -191,18 +221,16 @@ test('a seat opening admits the left rider while the right queue stays in place'
   expect(seats).toBe(48);
   await expect(count).toHaveText(String(initial - 32));
   await tapBus(page, 3);
-  await advanceUntil(page, async () => (await bus(page, 1).getAttribute('data-phase')) === 'leaving', 1200);
-  await page.clock.runFor(2_000);
+  await advanceUntil(page, async () => (await bus(page, 1).getAttribute('data-phase')) === 'leaving', 19_200);
+  await advanceGame(page, 2_000);
   await expect(bus(page, 1)).toHaveCount(0);
 });
 
 test('all passengers board, and the next stop is playable after refresh', async ({ page }) => {
   test.setTimeout(90_000);
-  await page.clock.install();
-  await page.goto('./');
+  await openWithPausedClock(page);
   const hint = button(page, '힌트');
   await expect(hint).toBeVisible();
-  await controlGameClock(page);
   const queueOrder = await page.getByLabel('해안 정류장', { exact: true }).evaluateHandle((board) => {
     const left = board.querySelector('[data-queue-side="left"]');
     const right = board.querySelector('[data-queue-side="right"]');
@@ -248,10 +276,10 @@ test('all passengers board, and the next stop is playable after refresh', async 
     } else {
       waiting += 500;
     }
-    await page.clock.runFor(500);
+    await advanceGame(page, 500);
   }
   expect(sent).toBe(original);
-  await page.clock.runFor(8_000);
+  await advanceGame(page, 8_000);
   await expect(page.getByTestId('passenger-count')).toHaveText('0');
   await expect(page.locator('[data-vehicle-id]')).toHaveCount(0);
   expect(await queueOrder.evaluate((order) => order.finish())).toEqual({
@@ -268,24 +296,22 @@ test('all passengers board, and the next stop is playable after refresh', async 
 
 for (const stage of [1, 3]) {
   test(`a full platform can lose stage ${stage}, then undo lets another bus leave`, async ({ page }) => {
-    await page.clock.install();
-    if (stage === 1) await page.goto('./');
-    else await restoreThirdStop(page);
+    await openWithPausedClock(page);
+    if (stage === 3) await restoreThirdStop(page);
     await expect(bus(page, 2).locator('.vehicle-hit')).toBeVisible();
-    await controlGameClock(page);
     const ids = [2, 4, 6, 8, 10, 12, 14];
     for (const id of ids) {
       await tapBus(page, id);
       await expect(bus(page, id)).toHaveAttribute('data-phase', 'driving');
     }
     // Two small vehicles can fill from the opening crowd on the first stage.
-    await page.clock.runFor(12_000);
+    await advanceGame(page, 12_000);
     if (stage === 1) {
       for (const id of [16, 19]) {
         await tapBus(page, id);
         await expect(bus(page, id)).toHaveAttribute('data-phase', 'driving');
       }
-      await page.clock.runFor(5_000);
+      await advanceGame(page, 5_000);
     }
     const result = page.getByRole('dialog', { name: '승강장이 꽉 찼어요' });
     await expect(result).toBeVisible({ timeout: 10_000 });
@@ -316,9 +342,8 @@ test('an installed depot can be relaunched and played offline', async ({ page, c
 });
 
 test('a restored advanced stop reveals a parked blind bus as soon as its exit clears', async ({ page }) => {
-  await page.clock.install();
+  await openWithPausedClock(page);
   await restoreThirdStop(page);
-  await controlGameClock(page);
   await expect(bus(page, 19)).toHaveAttribute('data-color', 'blind');
   await expect(bus(page, 24)).toHaveAttribute('data-color', 'blind');
   await tapBus(page, 18);

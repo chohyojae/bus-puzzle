@@ -104,7 +104,48 @@ BASE_PATH=/my-puzzle/ bun run build
 BASE_PATH=/my-puzzle/ E2E_BASE_PATH=/my-puzzle/ bun run test:e2e --project=chromium
 ```
 
-GitHub Actions는 `main` 푸시, PR, 수동 실행에서 의존성 설치·라운드 검증·타입 및 Biome 검사·단위 테스트·빌드를 실행합니다. 저장소 이름을 하위 경로로 사용해 데스크톱·모바일 Chromium 테스트를 수행하고, 통과한 `dist/`를 Pages 아티팩트로 업로드합니다. PR이 아닌 `main` 실행에서 배포 작업이 이어집니다. WebKit 검증은 로컬의 `--project=webkit`로 실행할 수 있습니다. [배포 워크플로](../.github/workflows/deploy.yml)
+GitHub Actions는 `main` 푸시, PR, 수동 실행에서 의존성 설치·라운드 검증·타입 및 Biome 검사·단위 테스트·빌드를 실행합니다. 배포할 저장소 이름을 빌드와 데스크톱·모바일 Chromium 테스트의 공통 하위 경로로 사용합니다. 테스트를 통과한 `dist/`는 `github-pages` 아티팩트로 보관합니다. WebKit 검증은 로컬의 `--project=webkit`로 실행할 수 있습니다. [배포 워크플로](../.github/workflows/deploy.yml)
+
+### 배포할 저장소 선택
+
+- **원본 저장소에서 서비스하는 경우.** 원본 저장소의 **Settings → Pages**에서 배포 소스로 **GitHub Actions**를 선택하고 저장소 변수 `PAGES_PUBLISH_REPO`를 비워 둡니다. `main`의 검증을 통과하면 `deploy` 작업이 같은 저장소의 Pages에 게시합니다.
+- **비공개 원본과 공개 사이트를 분리하는 경우.** 원본 저장소의 **Settings → Secrets and variables → Actions**에서 저장소 변수 `PAGES_PUBLISH_REPO`에 `bus-puzzle-play`를 지정합니다. 공개 저장소의 **Settings → Pages**에서 **Deploy from a branch**, `main`과 `/ (root)`를 선택합니다. 비공개 원본의 `main`에 푸시하면 검증과 아티팩트 업로드까지 진행됩니다. 원본 워크플로에는 공개 저장소에 쓸 권한이 없으므로 공개 사이트 갱신은 아래 명령으로 진행합니다. [비공개 원본](https://github.com/chohyojae/bus-puzzle) · [공개 배포 저장소](https://github.com/chohyojae/bus-puzzle-play) · [게임](https://chohyojae.github.io/bus-puzzle-play/)
+
+### 검증된 빌드 게시
+
+GitHub CLI에 로그인한 계정으로 아래 명령을 실행합니다. 현재 원본 `main` 커밋의 검증이 성공했는지 확인한 후 해당 실행의 아티팩트를 받습니다. 임시 디렉터리에 공개 저장소를 복제하므로 작업 중인 소스에는 영향을 주지 않습니다.
+
+```sh
+(
+  set -eu
+  source_repo=chohyojae/bus-puzzle
+  release_sha=$(gh api "repos/$source_repo/commits/main" --jq .sha)
+  run_id=$(gh run list -R "$source_repo" --workflow deploy.yml --branch main \
+    --commit "$release_sha" --status success --json databaseId,event \
+    --jq 'map(select(.event == "push" or .event == "workflow_dispatch")) | .[0].databaseId // empty')
+  test -n "$run_id" || { echo '현재 main 커밋에서 성공한 검증을 찾지 못했습니다.'; exit 1; }
+  release_dir=$(mktemp -d)
+  gh run download "$run_id" -R "$source_repo" -n github-pages -D "$release_dir/artifact"
+  mkdir "$release_dir/build"
+  tar -xf "$release_dir/artifact/artifact.tar" -C "$release_dir/build"
+  test -s "$release_dir/build/index.html"
+  test -d "$release_dir/build/assets"
+  jq -e '.scope == "/bus-puzzle-play/"' "$release_dir/build/manifest.webmanifest" >/dev/null
+  git clone --branch main --single-branch https://github.com/chohyojae/bus-puzzle-play.git "$release_dir/site"
+  touch "$release_dir/build/.nojekyll"
+  rsync -a --delete --include='/assets/***' --include='/icons/***' --include='/workbox-*.js' \
+    --include='/index.html' --include='/manifest.webmanifest' --include='/sw.js' --include='/.nojekyll' \
+    --exclude='/*' "$release_dir/build/" "$release_dir/site/"
+  cd "$release_dir/site"
+  git add --all
+  if ! git diff --cached --quiet; then
+    git commit -m "Deploy game $release_sha"
+    git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push origin HEAD:main
+  fi
+)
+```
+
+동기화 범위는 게임 진입 파일, 매니페스트, 서비스 워커, 에셋과 아이콘입니다. 같은 빌드를 다시 게시하면 변경이 없어 커밋을 건너뜁니다. 공개 저장소에 푸시하면 해당 저장소의 Pages 배포가 시작됩니다. [공개 배포 실행 기록](https://github.com/chohyojae/bus-puzzle-play/actions)
 
 | 증상                                                            | 확인할 곳                                                                                                                                 |
 | --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
